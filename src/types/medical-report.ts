@@ -93,8 +93,192 @@ export interface MedicalAIAnalysis {
   followUp: FollowUpRecommendations;
   redFlags: RedFlag[];
   trends?: TrendAnalysis[];
+  visualAnalytics: VisualAnalytics;
+  detailedInsights: DetailedInsights;
+  comparativeAnalysis: ComparativeAnalysis;
+  predictiveHealth: PredictiveHealth;
   confidence: number; // 0-1 scale
   disclaimers: string[];
+}
+
+export interface VisualAnalytics {
+  healthScoreBreakdown: HealthScoreComponent[];
+  riskDistribution: RiskDistributionData[];
+  biomarkerTrends: BiomarkerTrendData[];
+  systemsHealth: SystemHealthData[];
+  improvementOpportunities: ImprovementOpportunity[];
+}
+
+export interface HealthScoreComponent {
+  category: string;
+  score: number;
+  weight: number;
+  status: 'excellent' | 'good' | 'fair' | 'poor' | 'critical';
+  impact: string;
+  color: string;
+}
+
+export interface RiskDistributionData {
+  category: string;
+  low: number;
+  moderate: number;
+  high: number;
+  critical: number;
+}
+
+export interface BiomarkerTrendData {
+  biomarker: string;
+  currentValue: number;
+  optimalRange: { min: number; max: number };
+  historicalData?: { date: string; value: number }[];
+  trend: 'improving' | 'stable' | 'declining';
+  percentageFromOptimal: number;
+  unit: string;
+}
+
+export interface SystemHealthData {
+  system: string;
+  healthScore: number;
+  keyBiomarkers: string[];
+  status: 'optimal' | 'good' | 'concerning' | 'critical';
+  recommendations: string[];
+}
+
+export interface ImprovementOpportunity {
+  area: string;
+  currentStatus: string;
+  targetStatus: string;
+  potentialImprovement: number;
+  timeframe: string;
+  difficulty: 'easy' | 'moderate' | 'challenging';
+  priority: number;
+}
+
+export interface DetailedInsights {
+  clinicalCorrelations: ClinicalCorrelation[];
+  abnormalityExplanations: AbnormalityExplanation[];
+  preventiveStrategies: PreventiveStrategy[];
+  personalizedGuidance: PersonalizedGuidance;
+}
+
+export interface ClinicalCorrelation {
+  finding: string;
+  relatedFindings: string[];
+  clinicalSignificance: string;
+  potentialCauses: string[];
+  implications: string[];
+}
+
+export interface AbnormalityExplanation {
+  parameter: string;
+  actualValue: string;
+  normalRange: string;
+  severity: 'mild' | 'moderate' | 'severe';
+  possibleCauses: string[];
+  healthImplications: string[];
+  actionPlan: string[];
+}
+
+export interface PreventiveStrategy {
+  targetCondition: string;
+  currentRisk: number;
+  preventionMethods: PreventionMethod[];
+  timeline: string;
+  successRate: number;
+}
+
+export interface PreventionMethod {
+  method: string;
+  effectiveness: number;
+  effort: 'low' | 'medium' | 'high';
+  description: string;
+}
+
+export interface PersonalizedGuidance {
+  ageBasedRecommendations: string[];
+  genderSpecificAdvice: string[];
+  lifestageConsiderations: string[];
+  culturalDietaryAdvice?: string[];
+}
+
+export interface ComparativeAnalysis {
+  populationPercentiles: PopulationPercentile[];
+  ageGroupComparison: AgeGroupComparison;
+  optimalTargets: OptimalTarget[];
+  improvementPotential: ImprovementPotential[];
+}
+
+export interface PopulationPercentile {
+  parameter: string;
+  yourValue: number;
+  percentile: number;
+  interpretation: string;
+}
+
+export interface AgeGroupComparison {
+  ageGroup: string;
+  betterThanPeers: string[];
+  similarToPeers: string[];
+  needsImprovement: string[];
+}
+
+export interface OptimalTarget {
+  parameter: string;
+  currentValue: number;
+  optimalValue: number;
+  gap: number;
+  timeToOptimal: string;
+  strategies: string[];
+}
+
+export interface ImprovementPotential {
+  area: string;
+  currentScore: number;
+  potentialScore: number;
+  improvementPercentage: number;
+  keyActions: string[];
+}
+
+export interface PredictiveHealth {
+  futureRiskProjections: FutureRiskProjection[];
+  healthTrajectory: HealthTrajectory;
+  earlyWarningIndicators: EarlyWarningIndicator[];
+  preventiveInterventions: PreventiveIntervention[];
+}
+
+export interface FutureRiskProjection {
+  condition: string;
+  oneYearRisk: number;
+  fiveYearRisk: number;
+  tenYearRisk: number;
+  modifiableFactors: string[];
+  riskReductionPotential: number;
+}
+
+export interface HealthTrajectory {
+  currentAge: number;
+  biologicalAge: number;
+  projectedLifespan: number;
+  healthspan: number;
+  keyFactors: string[];
+}
+
+export interface EarlyWarningIndicator {
+  indicator: string;
+  currentValue: number;
+  warningThreshold: number;
+  criticalThreshold: number;
+  timeToWarning: string;
+  preventiveActions: string[];
+}
+
+export interface PreventiveIntervention {
+  intervention: string;
+  targetedRisks: string[];
+  effectiveness: number;
+  timeline: string;
+  difficulty: 'easy' | 'moderate' | 'challenging';
+  cost: 'low' | 'medium' | 'high';
 }
 
 export interface OverallAssessment {

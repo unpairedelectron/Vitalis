@@ -1,0 +1,8 @@
+Apollo Diagnostics
+Glucose Fasting: 122 mg/dL
+Patient Name: Test Patient
+Date: 2025-01-15
+
+Test Results:
+- Glucose Fasting: 122 mg/dL (Normal: 70-110 mg/dL)
+- Status: Elevated
