@@ -163,7 +163,7 @@ Vitalis is a premium health intelligence platform that aggregates data from Sams
 ### Environment Variables
 
 ```env
-OPENAI_API_KEY=your_openai_api_key
+OPENAI_API_KEY=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
 ANTHROPIC_API_KEY=your_anthropic_api_key
 SAMSUNG_HEALTH_CLIENT_ID=your_samsung_client_id
 FITBIT_CLIENT_ID=your_fitbit_client_id
