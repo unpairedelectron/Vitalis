@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/database';
+import { prisma } from '@/lib/database';
 
 export async function DELETE(
   request: NextRequest,
@@ -12,7 +12,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Device ID required' }, { status: 400 });
     }
 
-    const db = getDatabase();
+    const db = prisma;
     
     // Find the device connection
     const device = await db.deviceConnection.findUnique({
@@ -64,7 +64,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Device ID required' }, { status: 400 });
     }
 
-    const db = getDatabase();
+    const db = prisma;
     
     // Update the device connection
     const device = await db.deviceConnection.update({

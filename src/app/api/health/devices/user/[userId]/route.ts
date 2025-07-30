@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/database';
+import { prisma } from '@/lib/database';
 
 export async function GET(
   request: NextRequest,
@@ -12,7 +12,7 @@ export async function GET(
       return NextResponse.json({ error: 'User ID required' }, { status: 400 });
     }
 
-    const db = getDatabase();
+    const db = prisma;
     
     // Fetch all device connections for the user
     const devices = await db.deviceConnection.findMany({
@@ -25,7 +25,7 @@ export async function GET(
     });
 
     // Transform the data for the frontend
-    const transformedDevices = devices.map(device => ({
+    const transformedDevices = devices.map((device: any) => ({
       id: device.id,
       deviceType: device.deviceType,
       deviceId: device.deviceId,
@@ -65,7 +65,7 @@ export async function POST(
       );
     }
 
-    const db = getDatabase();
+    const db = prisma;
     
     // Create or update device connection
     const device = await db.deviceConnection.upsert({

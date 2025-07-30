@@ -23,6 +23,9 @@ export class VitalisAIEngine {
   constructor() {
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
+      // Handle SSL certificate issues in development
+      httpAgent: undefined,
+      dangerouslyAllowBrowser: false,
     });
     
     this.anthropic = new Anthropic({
