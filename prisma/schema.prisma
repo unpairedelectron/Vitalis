@@ -1,0 +1,325 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id                String      @id @default(cuid())
+  email             String      @unique
+  emailVerified     DateTime?
+  username          String?     @unique
+  firstName         String?
+  lastName          String?
+  password          String      // Hashed with bcrypt
+  avatar            String?
+  dateOfBirth       DateTime?
+  gender            Gender?
+  height            Float?      // cm
+  weight            Float?      // kg
+  timezone          String      @default("UTC")
+  language          String      @default("en")
+  country           String      @default("IN")
+  
+  // Health Profile
+  medicalHistory    MedicalHistory[]
+  emergencyContact  EmergencyContact[]
+  
+  // Data & Sessions
+  sessions          Session[]
+  healthData        HealthData[]
+  deviceConnections DeviceConnection[]
+  medicalReports    MedicalReport[]
+  healthInsights    HealthInsight[]
+  
+  // Timestamps
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  lastLoginAt       DateTime?
+  
+  // Preferences
+  preferences       UserPreferences?
+  
+  @@map("users")
+}
+
+model UserPreferences {
+  id                  String  @id @default(cuid())
+  userId              String  @unique
+  user                User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Notification Settings
+  emailNotifications  Boolean @default(true)
+  pushNotifications   Boolean @default(true)
+  smsNotifications    Boolean @default(false)
+  
+  // Health Alerts
+  criticalAlerts      Boolean @default(true)
+  abnormalReadings    Boolean @default(true)
+  weeklyReports       Boolean @default(true)
+  
+  // Privacy Settings
+  dataSharing         Boolean @default(false)
+  analyticsSharing    Boolean @default(true)
+  
+  // UI Preferences
+  theme               String  @default("dark")
+  units               String  @default("metric") // metric, imperial
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  @@map("user_preferences")
+}
+
+// Authentication & Sessions
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token        String   @unique
+  refreshToken String?  @unique
+  expiresAt    DateTime
+  userAgent    String?
+  ipAddress    String?
+  isRevoked    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@map("sessions")
+}
+
+// Health Data Models
+model HealthData {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type        HealthDataType
+  value       Float
+  unit        String
+  timestamp   DateTime
+  source      String          // device name or API source
+  confidence  Float           @default(1.0) // 0-1 confidence score
+  
+  // Additional metadata
+  metadata    Json?           // Flexible storage for device-specific data
+  isAnomaly   Boolean         @default(false)
+  
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  
+  @@index([userId, type, timestamp])
+  @@index([timestamp])
+  @@map("health_data")
+}
+
+model DeviceConnection {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  deviceType      DeviceType
+  deviceName      String
+  deviceId        String      // Unique device identifier
+  manufacturer    String
+  model           String?
+  firmwareVersion String?
+  
+  // Connection Details
+  isConnected     Boolean     @default(false)
+  lastSyncAt      DateTime?
+  connectionType  String      // BLE, WiFi, API
+  
+  // API Credentials (encrypted)
+  accessToken     String?     // Encrypted
+  refreshToken    String?     // Encrypted
+  tokenExpiresAt  DateTime?
+  
+  // Configuration
+  syncFrequency   Int         @default(300) // seconds
+  dataTypes       String      // Types of data this device provides (comma-separated)
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@unique([userId, deviceId])
+  @@map("device_connections")
+}
+
+// Medical Records
+model MedicalReport {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title           String
+  reportType      ReportType
+  uploadedFile    String?     // File path/URL
+  extractedData   Json        // Structured extracted data
+  analysisResult  Json        // AI analysis results
+  
+  // Metadata
+  reportDate      DateTime?   // Date the medical report was created
+  provider        String?     // Hospital/Lab name
+  doctorName      String?
+  
+  // Processing Status
+  status          ProcessingStatus @default(PENDING)
+  confidence      Float       @default(0.0)
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@index([userId, reportType])
+  @@map("medical_reports")
+}
+
+model MedicalHistory {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  condition     String
+  diagnosedAt   DateTime?
+  status        String    @default("active") // active, resolved, chronic
+  medications   String    // Comma-separated list of medications
+  notes         String?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("medical_history")
+}
+
+model EmergencyContact {
+  id           String @id @default(cuid())
+  userId       String
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name         String
+  relationship String
+  phoneNumber  String
+  email        String?
+  isPrimary    Boolean @default(false)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@map("emergency_contacts")
+}
+
+// AI Insights
+model HealthInsight {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type            InsightType
+  priority        Priority
+  title           String
+  description     String
+  recommendations String    // Comma-separated recommendations
+  confidence      Float
+  
+  // Data sources that contributed to this insight
+  sourceDataIds   String    // Comma-separated source data IDs
+  
+  // Status
+  isRead          Boolean       @default(false)
+  isActedUpon     Boolean       @default(false)
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  @@index([userId, priority, createdAt])
+  @@map("health_insights")
+}
+
+// Enums
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum HealthDataType {
+  HEART_RATE
+  HEART_RATE_VARIABILITY
+  BLOOD_PRESSURE_SYSTOLIC
+  BLOOD_PRESSURE_DIASTOLIC
+  BLOOD_OXYGEN
+  BODY_TEMPERATURE
+  SLEEP_DURATION
+  SLEEP_DEEP
+  SLEEP_REM
+  SLEEP_LIGHT
+  SLEEP_SCORE
+  STEPS
+  CALORIES_BURNED
+  DISTANCE
+  ACTIVE_MINUTES
+  STRESS_LEVEL
+  WEIGHT
+  BODY_FAT
+  MUSCLE_MASS
+  GLUCOSE_LEVEL
+  // Add more as needed
+}
+
+enum DeviceType {
+  SMARTWATCH
+  FITNESS_BAND
+  SCALE
+  BLOOD_PRESSURE_MONITOR
+  GLUCOSE_METER
+  PULSE_OXIMETER
+  SMART_RING
+  CHEST_STRAP
+  // Add more as needed
+}
+
+enum ReportType {
+  BLOOD_TEST
+  URINE_TEST
+  XRAY
+  MRI
+  CT_SCAN
+  ECG
+  PRESCRIPTION
+  DISCHARGE_SUMMARY
+  CONSULTATION_NOTES
+  // Add more as needed
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REQUIRES_REVIEW
+}
+
+enum InsightType {
+  RECOMMENDATION
+  WARNING
+  ACHIEVEMENT
+  TREND_ANALYSIS
+  RISK_ASSESSMENT
+  MEDICATION_REMINDER
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}

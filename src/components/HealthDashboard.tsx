@@ -1,7 +1,7 @@
 // Health Dashboard Component for Vitalis
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   HeartIcon, 
   MoonIcon, 
@@ -16,7 +16,8 @@ import {
   ChartPieIcon,
   CpuChipIcon,
   ComputerDesktopIcon,
-  DevicePhoneMobileIcon
+  DevicePhoneMobileIcon,
+  ArrowLeftIcon
 } from '@heroicons/react/24/outline';
 import { 
   LineChart, 
@@ -47,11 +48,13 @@ import {
 import { HealthCommandCenter } from './HealthCommandCenter';
 import { DeviceManager } from './DeviceManager';
 import { AITrainingDashboard } from './AITrainingDashboard';
+import { UserMenu } from './UserMenu';
 import MedicalReportAnalysis from './MedicalReportAnalysis';
 import { useRealTimeSensors } from '@/hooks/useRealTimeSensors';
 
 interface DashboardProps {
   userId: string;
+  onBackToLanding?: () => void;
 }
 
 interface DashboardData {
@@ -66,7 +69,7 @@ interface DashboardData {
   lastUpdate: Date;
 }
 
-export function HealthDashboard({ userId }: DashboardProps) {
+export function HealthDashboard({ userId, onBackToLanding }: DashboardProps) {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedMetric, setSelectedMetric] = useState<'heart' | 'sleep' | 'activity'>('heart');
@@ -77,18 +80,13 @@ export function HealthDashboard({ userId }: DashboardProps) {
   // Real-time sensor integration
   const { realTimeData, connectedDevices, isConnecting } = useRealTimeSensors();
 
-  useEffect(() => {
-    loadDashboardData();
-    // Set up real-time updates every 30 seconds
-    const interval = setInterval(loadDashboardData, 30000);
-    return () => clearInterval(interval);
-  }, [userId]);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       const response = await fetch(`/api/health/dashboard/${userId}`);
+      
       if (response.ok) {
         const data = await response.json();
+        
         // Convert date strings back to Date objects
         data.lastUpdate = new Date(data.lastUpdate);
         if (data.insights) {
@@ -108,7 +106,16 @@ export function HealthDashboard({ userId }: DashboardProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    loadDashboardData();
+    
+    // Set up polling interval
+    const interval = setInterval(loadDashboardData, 10000); // 10 seconds
+    
+    return () => clearInterval(interval);
+  }, [loadDashboardData]);
 
   if (loading) {
     return <DashboardSkeleton />;
@@ -129,16 +136,26 @@ export function HealthDashboard({ userId }: DashboardProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-                Vitalis Command Center
-              </h1>
+              <div className="flex items-center space-x-4">
+                {onBackToLanding && (
+                  <button
+                    onClick={onBackToLanding}
+                    className="flex items-center space-x-2 text-blue-300 hover:text-white transition-colors"
+                  >
+                    <ArrowLeftIcon className="h-5 w-5" />
+                    <span>Back to Landing</span>
+                  </button>
+                )}
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
+                  Vitalis Command Center
+                </h1>
+              </div>
               <p className="text-blue-200 mt-1">
                 Last updated: {dashboardData.lastUpdate instanceof Date 
                   ? dashboardData.lastUpdate.toLocaleTimeString() 
                   : new Date(dashboardData.lastUpdate).toLocaleTimeString()}
               </p>
-            </div>
-            <div className="flex items-center space-x-4">
+            </div>              <div className="flex items-center space-x-4">
               <HealthScoreIndicator score={dashboardData.healthScore} />
               
               {/* Device Manager Button */}
@@ -176,6 +193,9 @@ export function HealthDashboard({ userId }: DashboardProps) {
                   </span>
                 </div>
               )}
+              
+              {/* User Menu */}
+              <UserMenu />
             </div>
           </div>
         </div>

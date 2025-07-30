@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://vitalis.health/sitemap.xml
+
+# Important pages
+Allow: /dashboard
+Allow: /about
+Allow: /help
+Allow: /privacy
+Allow: /terms
+
+# Block test files and development files
+Disallow: /test-*
+Disallow: /_next/
+Disallow: /api/
+
+# Medical disclaimer
+# This site provides health monitoring tools but not medical advice
+# Always consult healthcare professionals for medical decisions

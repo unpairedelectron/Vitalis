@@ -1,24 +1,33 @@
-// Device Connection Manager for Vitalis
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  DevicePhoneMobileIcon,
-  WifiIcon,
-  BoltIcon,
-  SignalIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-  ArrowPathIcon,
-  PlusIcon
-} from '@heroicons/react/24/outline';
-import { useRealTimeSensors, useDeviceManagement } from '@/hooks/useRealTimeSensors';
-import { MiWatchConnection } from './MiWatchConnection';
-import FireBolttConnection from './FireBolttConnection';
+  Smartphone, 
+  Watch, 
+  Activity, 
+  Heart, 
+  Wifi, 
+  WifiOff, 
+  RefreshCw, 
+  CheckCircle, 
+  AlertCircle,
+  Plus,
+  Settings,
+  Trash2
+} from 'lucide-react';
+
+interface DeviceConnection {
+  id: string;
+  deviceType: string;
+  deviceId: string;
+  deviceName: string;
+  isConnected: boolean;
+  lastSync: string;
+  connectionData?: any;
+}
 
 interface DeviceManagerProps {
-  isOpen: boolean;
-  onClose: () => void;
+  userId: string;
 }
 
 export function DeviceManager({ isOpen, onClose }: DeviceManagerProps) {
