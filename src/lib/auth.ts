@@ -120,6 +120,24 @@ export class AuthService {
     }
   }
 
+  // Sign Out
+  static async signOut(token: string): Promise<void> {
+    try {
+      // Decode token to get user ID
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      
+      // Remove refresh token from database
+      await prisma.session.deleteMany({
+        where: {
+          userId: decoded.userId
+        }
+      });
+    } catch (error) {
+      // Token might be invalid, but that's okay for sign out
+      console.log('Sign out error:', error);
+    }
+  }
+
   // Verify Token
   static async verifyToken(token: string): Promise<AuthUser | null> {
     try {

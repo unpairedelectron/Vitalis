@@ -103,7 +103,7 @@ export class IndianMedicalStandards {
       populationSpecific: {
         ageGroup: 'all_ages',
         gender: 'both',
-        region: 'all'
+        // region: 'all' - commented out, invalid value
       },
       indianFactors: {
         geneticVariations: ['VDR gene polymorphisms', 'CYP2R1 variations'],

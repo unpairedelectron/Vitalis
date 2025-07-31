@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import ClientProviders from "@/components/ClientProviders";
 
+// Force dynamic rendering for all pages to avoid build issues
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "Vitalis - AI Health Guardian | Military-Grade Smartwatch Analytics",
   description: "Transform your smartwatch data into clinical-grade health insights. AI-powered health monitoring with military precision for Samsung Health, Apple Health, Fitbit & Oura Ring.",

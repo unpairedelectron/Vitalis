@@ -133,6 +133,72 @@ export const demoHealthData = {
       significance: 'high' as const,
       timeframe: '30-day comparison'
     }
+  ],
+
+  vitalsData: [
+    {
+      date: '2024-06-01',
+      systolic: 118,
+      diastolic: 76,
+      spo2: 98,
+      temperature: 36.6,
+      respiratoryRate: 15,
+      confidence: 0.96
+    },
+    {
+      date: '2024-06-02',
+      systolic: 120,
+      diastolic: 78,
+      spo2: 97,
+      temperature: 36.7,
+      respiratoryRate: 16,
+      confidence: 0.95
+    },
+    {
+      date: '2024-06-03',
+      systolic: 117,
+      diastolic: 75,
+      spo2: 99,
+      temperature: 36.5,
+      respiratoryRate: 15,
+      confidence: 0.97
+    },
+    {
+      date: '2024-06-04',
+      systolic: 119,
+      diastolic: 77,
+      spo2: 98,
+      temperature: 36.6,
+      respiratoryRate: 15,
+      confidence: 0.96
+    },
+    {
+      date: '2024-06-05',
+      systolic: 121,
+      diastolic: 79,
+      spo2: 97,
+      temperature: 36.8,
+      respiratoryRate: 16,
+      confidence: 0.95
+    },
+    {
+      date: '2024-06-06',
+      systolic: 118,
+      diastolic: 76,
+      spo2: 98,
+      temperature: 36.6,
+      respiratoryRate: 15,
+      confidence: 0.96
+    },
+    {
+      date: '2024-06-07',
+      systolic: 120,
+      diastolic: 78,
+      spo2: 97,
+      temperature: 36.7,
+      respiratoryRate: 16,
+      confidence: 0.95
+    }
   ]
 };
 
@@ -143,3 +209,120 @@ export const healthScoreBreakdown = {
   recovery: 89,
   stress: 78
 };
+
+export async function generateDemoHealthData() {
+  const today = new Date();
+  const currentWeek = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    return date;
+  }).reverse();
+
+  return {
+    success: true,
+    data: {
+      overview: {
+        totalSteps: 65432,
+        avgHeartRate: 72,
+        sleepScore: 85,
+        caloriesBurned: 2150,
+        activeMinutes: 145,
+        restingHR: 58
+      },
+      heartRateData: demoHealthData.heartRateData,
+      sleepData: demoHealthData.sleepData,
+      activityData: demoHealthData.activityData,
+      vitals: demoHealthData.vitalsData,
+      healthScore: 87,
+      lastUpdate: new Date(),
+      trends: {
+        weeklyImprovement: '+12%',
+        consistencyScore: 88,
+        healthScore: 8.7
+      },
+      insights: [
+        {
+          type: 'positive',
+          title: 'Excellent Sleep Pattern',
+          description: 'Your sleep quality has improved by 15% this week',
+          priority: 'high',
+          createdAt: new Date()
+        },
+        {
+          type: 'warning',
+          title: 'Hydration Alert',
+          description: 'Consider increasing water intake during afternoon hours',
+          priority: 'medium',
+          createdAt: new Date()
+        }
+      ],
+      alerts: [
+        {
+          id: 'alert_1',
+          type: 'warning',
+          severity: 'medium',
+          title: 'Heart Rate Variability',
+          description: 'Slight increase in resting heart rate detected',
+          createdAt: new Date(),
+          resolved: false
+        },
+        {
+          id: 'alert_2',
+          type: 'info',
+          severity: 'low',
+          title: 'Activity Goal',
+          description: 'You are 85% towards your daily step goal',
+          createdAt: new Date(),
+          resolved: false
+        }
+      ],
+      advancedFeatures: {
+        biomarkerAnalysis: {
+          vo2Max: 52.1,
+          lactateThreshold: 85,
+          metabolicEfficiency: 78,
+          cardiovascularFitness: 92,
+          muscleOxygenation: 88,
+          cortisolLevels: 12.5
+        },
+        riskAssessment: {
+          cardiovascularRisk: 15,
+          injuryRisk: 8,
+          burnoutRisk: 12,
+          immuneSystemStrength: 85,
+          overtrainingRisk: 6
+        },
+        performanceOptimization: {
+          explosivePower: 88,
+          enduranceCapacity: 92,
+          recoveryRate: 85,
+          sleepEfficiency: 89,
+          stressResilience: 82
+        },
+        predictiveInsights: [
+          {
+            metric: 'Performance Peak',
+            prediction: 'Optimal training window: 10:00-12:00 based on circadian rhythm analysis',
+            confidence: 0.87,
+            timeframe: '24-hour cycle',
+            actionable: true
+          },
+          {
+            metric: 'Recovery Time',
+            prediction: 'Full recovery expected within 18-22 hours based on current stress markers',
+            confidence: 0.92,
+            timeframe: '18-22 hours',
+            actionable: true
+          },
+          {
+            metric: 'Injury Risk',
+            prediction: 'Low risk maintained with current training load and recovery patterns',
+            confidence: 0.89,
+            timeframe: '7-day outlook',
+            actionable: false
+          }
+        ]
+      }
+    }
+  };
+}

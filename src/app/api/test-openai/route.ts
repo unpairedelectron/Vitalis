@@ -4,8 +4,6 @@ import { OpenAI } from 'openai';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-  // Handle SSL certificate issues in development
-  httpAgent: undefined,
   dangerouslyAllowBrowser: false,
 });
 
@@ -49,8 +47,8 @@ export async function GET() {
     return NextResponse.json(
       { 
         success: false, 
-        error: error.message,
-        code: error.code || 'unknown_error'
+        error: (error as Error).message,
+        code: (error as any).code || 'unknown_error'
       },
       { status: 500 }
     );

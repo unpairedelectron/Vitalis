@@ -1,6 +1,5 @@
 // Database client configuration for Vitalis
 import { PrismaClient } from '@prisma/client';
-import { withAccelerate } from '@prisma/extension-accelerate';
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -11,7 +10,7 @@ export const prisma =
   new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
     errorFormat: 'pretty',
-  }).$extends(withAccelerate());
+  });
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
@@ -66,6 +65,7 @@ export class HealthDataEncryption {
 
 // Database Helper Functions
 export class DatabaseHelpers {
+  static getInstance: any;
   // User Management
   static async createUser(userData: {
     email: string;
@@ -213,7 +213,7 @@ export class DatabaseHelpers {
         manufacturer: deviceData.manufacturer,
         model: deviceData.model,
         connectionType: deviceData.connectionType,
-        dataTypes: deviceData.dataTypes,
+        dataTypes: Array.isArray(deviceData.dataTypes) ? deviceData.dataTypes.join(',') : deviceData.dataTypes,
         isConnected: true,
         lastSyncAt: new Date()
       }
@@ -317,9 +317,9 @@ export class DatabaseHelpers {
         priority: insightData.priority,
         title: insightData.title,
         description: insightData.description,
-        recommendations: insightData.recommendations,
+        recommendations: Array.isArray(insightData.recommendations) ? insightData.recommendations.join('|') : insightData.recommendations,
         confidence: insightData.confidence,
-        sourceDataIds: insightData.sourceDataIds
+        sourceDataIds: Array.isArray(insightData.sourceDataIds) ? insightData.sourceDataIds.join(',') : insightData.sourceDataIds
       }
     });
   }

@@ -172,13 +172,15 @@ export class AdaptiveClinicalEngine {
     };
   }
 
-  private async parseNarrativeDocument(input: File | string): Promise<DocumentParsingResult> {
+  private async parseNarrativeDocument(input: string | File): Promise<DocumentParsingResult> {
     console.log('📖 Parsing narrative document with ClinicalBERT...');
     
+    const content = typeof input === 'string' ? input : await this.extractTextFromFile(input);
+    
     // Deploy Clinical BERT for narrative analysis
-    const clinicalEntities = await this.extractClinicalEntities(input);
-    const negationAnalysis = this.performNegationDetection(input);
-    const temporalAnalysis = this.performTemporalAnalysis(input);
+    const clinicalEntities = await this.extractClinicalEntities(content);
+    const negationAnalysis = this.performNegationDetection(content);
+    const temporalAnalysis = this.performTemporalAnalysis(content);
     
     return {
       extractedData: this.convertNarrativeToStandard(clinicalEntities, negationAnalysis, temporalAnalysis),
@@ -188,7 +190,7 @@ export class AdaptiveClinicalEngine {
         layout: 'ehr_printout',
         quality: 0.95,
         language: 'en',
-        medicalSpecialty: this.detectSpecialtyFromNarrative(input)
+        medicalSpecialty: this.detectSpecialtyFromNarrative(content)
       },
       traceability: [
         {
@@ -200,6 +202,87 @@ export class AdaptiveClinicalEngine {
         }
       ]
     };
+  }
+
+  private async parseStructuredDocument(input: string | File): Promise<DocumentParsingResult> {
+    const content = typeof input === 'string' ? input : await this.extractTextFromFile(input);
+    
+    // Parse structured medical documents (lab reports, discharge summaries, etc.)
+    const sections = this.identifyDocumentSections(content);
+    const extractedData = await this.extractDataFromSections(sections);
+    
+    return {
+      extractedData,
+      confidence: 0.95,
+      parsingMethod: 'structured',
+      sourceMetadata: {
+        layout: 'scan',
+        quality: 0.9,
+        language: 'en'
+      },
+      traceability: []
+    };
+  }
+
+  private async extractTextFromFile(file: File): Promise<string> {
+    // Handle different file types
+    if (file.type === 'application/pdf') {
+      // PDF text extraction would go here
+      return 'PDF content extracted';
+    } else if (file.type.startsWith('image/')) {
+      // OCR would go here
+      return 'OCR text extracted';
+    } else {
+      return await file.text();
+    }
+  }
+
+  private identifyDocumentSections(text: string): Record<string, string> {
+    const sections: Record<string, string> = {};
+    
+    // Common medical document section patterns
+    const sectionPatterns = [
+      { name: 'patient_info', pattern: /patient\s+information|demographics/i },
+      { name: 'chief_complaint', pattern: /chief\s+complaint|presenting\s+concern/i },
+      { name: 'history', pattern: /history\s+of\s+present\s+illness|medical\s+history/i },
+      { name: 'examination', pattern: /physical\s+examination|clinical\s+findings/i },
+      { name: 'investigations', pattern: /laboratory\s+results|investigations|tests/i },
+      { name: 'diagnosis', pattern: /diagnosis|impression|assessment/i },
+      { name: 'treatment', pattern: /treatment|management|medications/i },
+      { name: 'recommendations', pattern: /recommendations|follow.?up|plan/i }
+    ];
+
+    for (const section of sectionPatterns) {
+      const match = text.match(new RegExp(`${section.pattern.source}[\\s\\S]*?(?=\\n\\n|$)`, 'i'));
+      if (match) {
+        sections[section.name] = match[0];
+      }
+    }
+
+    return sections;
+  }
+
+  private async extractDataFromSections(sections: Record<string, string>): Promise<any> {
+    const extractedData: any = {};
+    
+    for (const [sectionName, content] of Object.entries(sections)) {
+      switch (sectionName) {
+        case 'patient_info':
+          extractedData.patientInfo = this.extractPatientInfo(content);
+          break;
+        case 'investigations':
+          extractedData.labResults = this.extractLabResults(content);
+          break;
+        case 'diagnosis':
+          extractedData.diagnoses = this.extractDiagnoses(content);
+          break;
+        case 'treatment':
+          extractedData.medications = this.extractMedications(content);
+          break;
+      }
+    }
+    
+    return extractedData;
   }
 
   /**
@@ -249,9 +332,9 @@ export class AdaptiveClinicalEngine {
     return mockPercentiles[parameter.toLowerCase()] || 50;
   }
 
-  private async getIndianStandards(parameter: string): Promise<{ normal: { min: number; max: number }; source: string } | undefined> {
+  private async getIndianStandards(parameter: string): Promise<{ normal: { min: number; max: number }; source: 'ICMR' | 'AIIMS' | 'PGIMER' | 'CMC_Vellore' } | undefined> {
     // Indian medical standards from ICMR, AIIMS, etc.
-    const indianStandards: { [key: string]: any } = {
+    const indianStandards: { [key: string]: { normal: { min: number; max: number }; source: 'ICMR' | 'AIIMS' | 'PGIMER' | 'CMC_Vellore' } } = {
       'glucose': { normal: { min: 70, max: 110 }, source: 'ICMR' },
       'hba1c': { normal: { min: 4.0, max: 5.6 }, source: 'AIIMS' },
       'cholesterol': { normal: { min: 150, max: 200 }, source: 'ICMR' },
@@ -451,14 +534,19 @@ export class AdaptiveClinicalEngine {
         status: this.determineStatus(lab.value, lab.range),
         category: 'laboratory'
       })),
-      labValues: labResults.map(lab => ({
-        parameter: lab.parameter,
-        value: lab.value,
-        unit: lab.unit,
-        normalRange: lab.range,
-        status: this.determineStatus(lab.value, lab.range),
-        flagged: this.determineStatus(lab.value, lab.range) !== 'normal'
-      })),
+      labValues: labResults.map(lab => {
+        const rawStatus = this.determineStatus(lab.value, lab.range);
+        const mappedStatus = rawStatus === 'low' || rawStatus === 'high' || rawStatus === 'borderline' ? 'abnormal' : rawStatus;
+        
+        return {
+          parameter: lab.parameter,
+          value: lab.value,
+          unit: lab.unit,
+          normalRange: lab.range,
+          status: mappedStatus as 'normal' | 'abnormal' | 'critical',
+          flagged: rawStatus !== 'normal'
+        };
+      }),
       diagnoses: [],
       recommendations: []
     };
@@ -568,7 +656,7 @@ export class AdaptiveClinicalEngine {
     return baseMeans[parameter.toLowerCase()] || 0;
   }
 
-  private determineStatus(value: number | string, range: string): 'normal' | 'high' | 'low' | 'critical' | 'borderline' {
+  private determineStatus(value: number | string, range: string): 'low' | 'high' | 'critical' | 'normal' | 'borderline' {
     if (!range) return 'normal';
     
     const numValue = typeof value === 'string' ? parseFloat(value) : value;
@@ -578,8 +666,24 @@ export class AdaptiveClinicalEngine {
       const min = parseFloat(rangeMatch[1]);
       const max = parseFloat(rangeMatch[2]);
       
+      // Check for critical values (significantly outside normal range)
+      const criticalLowThreshold = min * 0.5; // 50% below minimum
+      const criticalHighThreshold = max * 1.5; // 50% above maximum
+      
+      if (numValue < criticalLowThreshold || numValue > criticalHighThreshold) {
+        return 'critical';
+      }
+      
+      // Check for borderline values (within 10% of range boundaries)
+      const borderlineLowThreshold = min * 1.1;
+      const borderlineHighThreshold = max * 0.9;
+      
       if (numValue < min) return 'low';
       if (numValue > max) return 'high';
+      if (numValue <= borderlineLowThreshold || numValue >= borderlineHighThreshold) {
+        return 'borderline';
+      }
+      
       return 'normal';
     }
     
@@ -618,6 +722,75 @@ export class AdaptiveClinicalEngine {
     }
     
     return augmentedText;
+  }
+
+  private extractPatientInfo(content: string): any {
+    const patientInfo: any = {};
+    
+    // Extract patient demographics
+    const nameMatch = content.match(/(?:patient\s+name|name)\s*[:\-]\s*([a-zA-Z\s]+)/i);
+    if (nameMatch) patientInfo.name = nameMatch[1].trim();
+    
+    const ageMatch = content.match(/(?:age|years?)\s*[:\-]\s*([0-9]+)/i);
+    if (ageMatch) patientInfo.age = parseInt(ageMatch[1]);
+    
+    const genderMatch = content.match(/(?:gender|sex)\s*[:\-]\s*(male|female|m|f)/i);
+    if (genderMatch) patientInfo.gender = genderMatch[1].toLowerCase();
+    
+    const dobMatch = content.match(/(?:dob|date\s+of\s+birth)\s*[:\-]\s*([0-9\/\-]+)/i);
+    if (dobMatch) patientInfo.dateOfBirth = dobMatch[1].trim();
+    
+    return patientInfo;
+  }
+
+  private extractLabResults(content: string): any[] {
+    return this.extractLabValues(content);
+  }
+
+  private extractDiagnoses(content: string): string[] {
+    const diagnoses: string[] = [];
+    
+    // Extract diagnosis patterns
+    const diagnosisPatterns = [
+      /(?:diagnosis|impression|assessment)\s*[:\-]\s*([^\n]+)/gi,
+      /(?:diagnosed\s+with|suffering\s+from)\s+([a-zA-Z\s,]+)/gi
+    ];
+    
+    for (const pattern of diagnosisPatterns) {
+      let match;
+      while ((match = pattern.exec(content)) !== null) {
+        const diagnosis = match[1].trim();
+        if (diagnosis && !diagnoses.includes(diagnosis)) {
+          diagnoses.push(diagnosis);
+        }
+      }
+    }
+    
+    return diagnoses;
+  }
+
+  private extractMedications(content: string): any[] {
+    const medications: any[] = [];
+    
+    // Extract medication patterns
+    const medicationPatterns = [
+      /(?:tablet|cap|syrup|injection)\s+([a-zA-Z\s]+)\s+([0-9]+\s*mg)/gi,
+      /([a-zA-Z]+)\s+([0-9]+\s*mg)\s+(?:once|twice|thrice|daily|bid|tid)/gi
+    ];
+    
+    for (const pattern of medicationPatterns) {
+      let match;
+      while ((match = pattern.exec(content)) !== null) {
+        medications.push({
+          name: match[1].trim(),
+          dosage: match[2]?.trim() || '',
+          frequency: '',
+          indication: ''
+        });
+      }
+    }
+    
+    return medications;
   }
 }
 

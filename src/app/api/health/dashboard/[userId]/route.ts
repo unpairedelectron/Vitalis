@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AuthService } from '@/lib/auth';
 import { DatabaseHelpers } from '@/lib/database';
 import { VitalisAIEngine } from '@/lib/ai-engine';
+import { generateDemoHealthData } from '@/lib/demo-data';
 
 export async function GET(
   request: NextRequest,
@@ -11,7 +12,13 @@ export async function GET(
   try {
     const { userId } = await params;
     
-    // Authenticate user
+    // Allow demo access without authentication
+    if (userId === 'demo-user-001') {
+      const demoData = await generateDemoHealthData();
+      return NextResponse.json(demoData);
+    }
+    
+    // Authenticate user for non-demo access
     const token = request.cookies.get('vitalis-token')?.value;
     const authenticatedUser = token ? await AuthService.verifyToken(token) : null;
     

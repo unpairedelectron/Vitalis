@@ -129,8 +129,8 @@ export class NoRegistrationHealthConnector {
 
     // Try Bluetooth first
     try {
-      data.heartRate = await this.getBluetoothHeartRate();
-      data.steps = await this.getBluetoothSteps();
+      const hr = await this.getBluetoothHeartRate(); data.heartRate = hr === null ? undefined : hr;
+      const steps = await this.getBluetoothSteps(); data.steps = steps === null ? undefined : steps;
     } catch (e) {
       console.log('Bluetooth unavailable, trying other sources');
     }
@@ -138,7 +138,7 @@ export class NoRegistrationHealthConnector {
     // Try Health Connect
     try {
       if (!data.heartRate) {
-        data.heartRate = await this.getHealthConnectHeartRate();
+        const hcHeartRate = await this.getHealthConnectHeartRate(); data.heartRate = hcHeartRate === null ? undefined : hcHeartRate;
       }
     } catch (e) {
       console.log('Health Connect unavailable');

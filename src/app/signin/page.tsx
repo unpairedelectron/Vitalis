@@ -105,9 +105,21 @@ export default function SignInPage() {
 
       // Generate a demo token and login
       const token = 'demo-token-' + Date.now();
+      
+      // Store auth data immediately
+      localStorage.setItem('vitalis_token', token);
+      localStorage.setItem('vitalis_user', JSON.stringify(userData!));
+      
+      // Login via context
       login(token, userData!);
+      
       showSuccess(`Welcome back${userData!.firstName ? ', ' + userData!.firstName : ''}! Redirecting to dashboard...`);
-      router.push('/dashboard');
+      
+      // Force navigation to dashboard
+      setTimeout(() => {
+        router.push('/dashboard');
+        window.location.href = '/dashboard'; // Fallback
+      }, 1000);
       
     } catch (err) {
       showError('An error occurred. Please try again.');
@@ -131,9 +143,21 @@ export default function SignInPage() {
       };
 
       const token = 'demo-token-' + Date.now();
+      
+      // Store auth data immediately
+      localStorage.setItem('vitalis_token', token);
+      localStorage.setItem('vitalis_user', JSON.stringify(userData));
+      
+      // Login via context
       login(token, userData);
+      
       showSuccess('Demo login successful! Redirecting to dashboard...');
-      router.push('/dashboard');
+      
+      // Force navigation to dashboard
+      setTimeout(() => {
+        router.push('/dashboard');
+        window.location.href = '/dashboard'; // Fallback
+      }, 1000);
     } catch (err) {
       setError('Demo login failed. Please try again.');
     } finally {

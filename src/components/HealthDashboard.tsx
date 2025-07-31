@@ -38,6 +38,7 @@ import {
   RadialBar
 } from 'recharts';
 import { HealthMetric, HealthInsight, HealthAlert, TrendAnalysis } from '@/types/health';
+import { ChartWrapper } from './ChartWrapper';
 import { 
   AdvancedBiomarkerPanel, 
   MilitaryRiskAssessment, 
@@ -51,6 +52,7 @@ import { AITrainingDashboard } from './AITrainingDashboard';
 import { UserMenu } from './UserMenu';
 import MedicalReportAnalysis from './MedicalReportAnalysis';
 import { useRealTimeSensors } from '@/hooks/useRealTimeSensors';
+import { ClinicalDashboard } from './ClinicalDashboardEnhanced';
 
 interface DashboardProps {
   userId: string;
@@ -76,6 +78,7 @@ export function HealthDashboard({ userId, onBackToLanding }: DashboardProps) {
   const [commandCenterOpen, setCommandCenterOpen] = useState(false);
   const [deviceManagerOpen, setDeviceManagerOpen] = useState(false);
   const [medicalAnalysisOpen, setMedicalAnalysisOpen] = useState(false);
+  const [clinicalDashboardOpen, setClinicalDashboardOpen] = useState(false);
   
   // Real-time sensor integration
   const { realTimeData, connectedDevices, isConnecting } = useRealTimeSensors();
@@ -85,20 +88,38 @@ export function HealthDashboard({ userId, onBackToLanding }: DashboardProps) {
       const response = await fetch(`/api/health/dashboard/${userId}`);
       
       if (response.ok) {
-        const data = await response.json();
+        const apiResponse = await response.json();
+        
+        // Extract data from the nested structure if it exists
+        const data = apiResponse.data || apiResponse;
         
         // Convert date strings back to Date objects
-        data.lastUpdate = new Date(data.lastUpdate);
+        if (data.lastUpdate) {
+          data.lastUpdate = new Date(data.lastUpdate);
+        }
         if (data.insights) {
           data.insights.forEach((insight: any) => {
-            insight.createdAt = new Date(insight.createdAt);
+            if (insight.createdAt) {
+              insight.createdAt = new Date(insight.createdAt);
+            }
           });
         }
         if (data.alerts) {
           data.alerts.forEach((alert: any) => {
-            alert.createdAt = new Date(alert.createdAt);
+            if (alert.createdAt) {
+              alert.createdAt = new Date(alert.createdAt);
+            }
           });
         }
+        
+        // Debug logging
+        console.log('Dashboard data loaded:', {
+          hasTrends: !!data.trends,
+          trendsType: typeof data.trends,
+          trendsIsArray: Array.isArray(data.trends),
+          trendsLength: Array.isArray(data.trends) ? data.trends.length : 'N/A'
+        });
+        
         setDashboardData(data);
       }
     } catch (error) {
@@ -125,12 +146,23 @@ export function HealthDashboard({ userId, onBackToLanding }: DashboardProps) {
     return <DashboardError />;
   }
 
-  const criticalAlerts = dashboardData.alerts.filter(alert => 
+  // Safely access alerts with fallback to empty array
+  const criticalAlerts = (dashboardData.alerts || []).filter(alert => 
     alert.severity === 'critical' || alert.severity === 'danger'
   );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
+      {/* Clinical Dashboard Modal */}
+      {clinicalDashboardOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm">
+          <ClinicalDashboard 
+            userId={userId} 
+            onClose={() => setClinicalDashboardOpen(false)} 
+          />
+        </div>
+      )}
+      
       {/* Header */}
       <div className="border-b border-blue-800/30 bg-black/20 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -155,8 +187,23 @@ export function HealthDashboard({ userId, onBackToLanding }: DashboardProps) {
                   ? dashboardData.lastUpdate.toLocaleTimeString() 
                   : new Date(dashboardData.lastUpdate).toLocaleTimeString()}
               </p>
-            </div>              <div className="flex items-center space-x-4">
-              <HealthScoreIndicator score={dashboardData.healthScore} />
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-3">
+              <HealthScoreIndicator score={dashboardData.healthScore || 0} />
+              
+              {/* Clinical Dashboard Button - Made more prominent */}
+              <button
+                onClick={() => setClinicalDashboardOpen(true)}
+                className="flex items-center space-x-2 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105 shadow-lg border-2 border-red-400/50"
+                title="Access Clinical Analysis Dashboard"
+              >
+                <ShieldCheckIcon className="h-6 w-6" />
+                <span className="text-lg">Clinical Analysis</span>
+                <div className="bg-red-500/30 border border-red-300/50 rounded px-2 py-1 ml-2">
+                  <span className="text-red-100 text-xs font-bold">NEW</span>
+                </div>
+              </button>
               
               {/* Device Manager Button */}
               <button
@@ -188,9 +235,7 @@ export function HealthDashboard({ userId, onBackToLanding }: DashboardProps) {
               {criticalAlerts.length > 0 && (
                 <div className="flex items-center space-x-2 bg-red-600/20 border border-red-500/50 rounded-lg px-3 py-2">
                   <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
-                  <span className="text-red-300 font-medium">
-                    {criticalAlerts.length} Critical Alert{criticalAlerts.length > 1 ? 's' : ''}
-                  </span>
+                  <span className="text-red-300 font-medium">{criticalAlerts.length} Alert{criticalAlerts.length !== 1 ? 's' : ''}</span>
                 </div>
               )}
               
@@ -238,23 +283,26 @@ export function HealthDashboard({ userId, onBackToLanding }: DashboardProps) {
             {/* Dynamic Chart Display */}
             <div className="bg-black/40 backdrop-blur-sm border border-blue-500/30 rounded-xl p-6">
               {selectedMetric === 'heart' && (
-                <HeartRateChart data={dashboardData.heartRateData} />
+                <HeartRateChart data={dashboardData.heartRateData || []} />
               )}
               {selectedMetric === 'sleep' && (
-                <SleepAnalysisChart data={dashboardData.sleepData} />
+                <SleepAnalysisChart data={dashboardData.sleepData || []} />
               )}
               {selectedMetric === 'activity' && (
-                <ActivityChart data={dashboardData.activityData} />
+                <ActivityChart data={dashboardData.activityData || []} />
               )}
             </div>
 
             {/* Military-Grade Analytics Panel */}
-            <MilitaryAnalyticsPanel insights={dashboardData.insights} trends={dashboardData.trends} />
+            <MilitaryAnalyticsPanel 
+              insights={Array.isArray(dashboardData.insights) ? dashboardData.insights : []} 
+              trends={Array.isArray(dashboardData.trends) ? dashboardData.trends : []} 
+            />
 
             {/* Real-time Vital Signs Monitor */}
             <VitalSignsMonitor 
-              heartRate={realTimeData.heartRate || dashboardData.heartRateData[0]} 
-              healthScore={dashboardData.healthScore}
+              heartRate={realTimeData.heartRate || (dashboardData.heartRateData && dashboardData.heartRateData[0])} 
+              healthScore={dashboardData.healthScore || 0}
               realTimeData={realTimeData}
               isLiveConnected={connectedDevices.some(d => d.isConnected)}
             />
@@ -262,8 +310,35 @@ export function HealthDashboard({ userId, onBackToLanding }: DashboardProps) {
 
           {/* Insights Panel */}
           <div className="space-y-6">
-            <InsightsPanel insights={dashboardData.insights} />
-            <AlertsPanel alerts={dashboardData.alerts.filter(a => a.severity !== 'critical')} />
+            <InsightsPanel insights={dashboardData.insights || []} />
+            <AlertsPanel alerts={(dashboardData.alerts || []).filter(a => a.severity !== 'critical')} />
+            
+            {/* Clinical Analysis Access Card */}
+            <div className="bg-gradient-to-br from-red-900/50 to-pink-900/50 backdrop-blur-sm border border-red-500/30 rounded-xl p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="bg-red-500/20 p-3 rounded-lg">
+                    <ShieldCheckIcon className="h-8 w-8 text-red-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">Clinical Analysis Dashboard</h3>
+                    <p className="text-red-200">Access 25+ medical-grade health features</p>
+                    <div className="flex items-center space-x-2 mt-2">
+                      <span className="bg-red-500/20 border border-red-400/50 rounded px-2 py-1 text-red-300 text-xs font-medium">FDA-CLEARED</span>
+                      <span className="bg-red-500/20 border border-red-400/50 rounded px-2 py-1 text-red-300 text-xs font-medium">HIPAA-COMPLIANT</span>
+                      <span className="bg-red-500/20 border border-red-400/50 rounded px-2 py-1 text-red-300 text-xs font-medium">WHO/ACSM</span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setClinicalDashboardOpen(true)}
+                  className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-bold transition-all transform hover:scale-105 flex items-center space-x-2"
+                >
+                  <span>Launch Clinical Dashboard</span>
+                  <ShieldCheckIcon className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -279,13 +354,13 @@ export function HealthDashboard({ userId, onBackToLanding }: DashboardProps) {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <AdvancedBiomarkerPanel data={dashboardData.advancedFeatures.biomarkerAnalysis} />
-            <MilitaryRiskAssessment risk={dashboardData.advancedFeatures.riskAssessment} />
+            <AdvancedBiomarkerPanel data={dashboardData.advancedFeatures?.biomarkerAnalysis} />
+            <MilitaryRiskAssessment risk={dashboardData.advancedFeatures?.riskAssessment} />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <PerformanceOptimizationPanel performance={dashboardData.advancedFeatures.performanceOptimization} />
-            <PredictiveAnalysisPanel predictions={dashboardData.advancedFeatures.predictiveInsights} />
+            <PerformanceOptimizationPanel performance={dashboardData.advancedFeatures?.performanceOptimization} />
+            <PredictiveAnalysisPanel predictions={dashboardData.advancedFeatures?.predictiveInsights} />
           </div>
         </div>
       </div>
@@ -297,11 +372,25 @@ export function HealthDashboard({ userId, onBackToLanding }: DashboardProps) {
         healthData={dashboardData}
       />
 
-      {/* Device Manager */}
-      <DeviceManager 
-        isOpen={deviceManagerOpen}
-        onClose={() => setDeviceManagerOpen(false)}
-      />
+      {/* Device Manager - Only show when open */}
+      {deviceManagerOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-auto">
+            <div className="p-4 border-b flex justify-between items-center">
+              <h2 className="text-xl font-bold">Device Manager</h2>
+              <button 
+                onClick={() => setDeviceManagerOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-4">
+              <DeviceManager userId={userId} />
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Medical Report Analysis */}
       {medicalAnalysisOpen && (
@@ -396,35 +485,37 @@ function HeartRateChart({ data }: { data: any[] }) {
       </div>
       
       <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData}>
-            <defs>
-              <linearGradient id="heartGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis dataKey="time" stroke="#9ca3af" fontSize={12} />
-            <YAxis domain={[50, 150]} stroke="#9ca3af" fontSize={12} />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: '#1f2937', 
-                border: '1px solid #374151',
-                borderRadius: '8px',
-                color: '#fff'
-              }} 
-            />
-            <Area
-              type="monotone"
-              dataKey="bpm"
-              stroke="#ef4444"
-              strokeWidth={2}
-              fillOpacity={1}
-              fill="url(#heartGradient)"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+        <ChartWrapper height={320}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData}>
+              <defs>
+                <linearGradient id="heartGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis dataKey="time" stroke="#9ca3af" fontSize={12} />
+              <YAxis domain={[50, 150]} stroke="#9ca3af" fontSize={12} />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#1f2937', 
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: '#fff'
+                }} 
+              />
+              <Area
+                type="monotone"
+                dataKey="bpm"
+                stroke="#ef4444"
+                strokeWidth={2}
+                fillOpacity={1}
+                fill="url(#heartGradient)"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </ChartWrapper>
       </div>
 
       {/* Heart Rate Zones */}
@@ -460,24 +551,26 @@ function SleepAnalysisChart({ data }: { data: any[] }) {
       </div>
       
       <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis dataKey="date" stroke="#9ca3af" fontSize={12} />
-            <YAxis stroke="#9ca3af" fontSize={12} />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: '#1f2937', 
-                border: '1px solid #374151',
-                borderRadius: '8px',
-                color: '#fff'
-              }} 
-            />
-            <Bar dataKey="deep" stackId="a" fill="#1e40af" name="Deep Sleep" />
-            <Bar dataKey="rem" stackId="a" fill="#3b82f6" name="REM Sleep" />
-            <Bar dataKey="light" stackId="a" fill="#60a5fa" name="Light Sleep" />
-          </BarChart>
-        </ResponsiveContainer>
+        <ChartWrapper height={320}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis dataKey="date" stroke="#9ca3af" fontSize={12} />
+              <YAxis stroke="#9ca3af" fontSize={12} />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#1f2937', 
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: '#fff'
+                }} 
+              />
+              <Bar dataKey="deep" stackId="a" fill="#1e40af" name="Deep Sleep" />
+              <Bar dataKey="rem" stackId="a" fill="#3b82f6" name="REM Sleep" />
+              <Bar dataKey="light" stackId="a" fill="#60a5fa" name="Light Sleep" />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartWrapper>
       </div>
 
       {/* Sleep Metrics */}
@@ -525,40 +618,42 @@ function ActivityChart({ data }: { data: any[] }) {
       </div>
       
       <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis dataKey="date" stroke="#9ca3af" fontSize={12} />
-            <YAxis yAxisId="steps" orientation="left" stroke="#9ca3af" fontSize={12} />
-            <YAxis yAxisId="calories" orientation="right" stroke="#9ca3af" fontSize={12} />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: '#1f2937', 
-                border: '1px solid #374151',
-                borderRadius: '8px',
-                color: '#fff'
-              }} 
-            />
-            <Line 
-              yAxisId="steps"
-              type="monotone" 
-              dataKey="steps" 
-              stroke="#f59e0b" 
-              strokeWidth={3}
-              dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
-              name="Steps"
-            />
-            <Line 
-              yAxisId="calories"
-              type="monotone" 
-              dataKey="calories" 
-              stroke="#ef4444" 
-              strokeWidth={3}
-              dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
-              name="Calories"
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <ChartWrapper height={320}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis dataKey="date" stroke="#9ca3af" fontSize={12} />
+              <YAxis yAxisId="steps" orientation="left" stroke="#9ca3af" fontSize={12} />
+              <YAxis yAxisId="calories" orientation="right" stroke="#9ca3af" fontSize={12} />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#1f2937', 
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: '#fff'
+                }} 
+              />
+              <Line 
+                yAxisId="steps"
+                type="monotone" 
+                dataKey="steps" 
+                stroke="#f59e0b" 
+                strokeWidth={3}
+                dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
+                name="Steps"
+              />
+              <Line 
+                yAxisId="calories"
+                type="monotone" 
+                dataKey="calories" 
+                stroke="#ef4444" 
+                strokeWidth={3}
+                dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
+                name="Calories"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </ChartWrapper>
       </div>
 
       {/* Activity Metrics */}
@@ -594,6 +689,8 @@ function ActivityChart({ data }: { data: any[] }) {
 
 // Military-Grade Analytics Panel
 function MilitaryAnalyticsPanel({ insights, trends }: { insights: HealthInsight[], trends: TrendAnalysis[] }) {
+  // Ensure trends is always an array
+  const safeTrends = Array.isArray(trends) ? trends : [];
   return (
     <div className="bg-gradient-to-r from-slate-900/50 to-slate-800/50 border border-slate-500/50 rounded-xl p-6">
       <div className="flex items-center space-x-3 mb-6">
@@ -638,7 +735,7 @@ function MilitaryAnalyticsPanel({ insights, trends }: { insights: HealthInsight[
       {/* Advanced Biomarker Trends */}
       <div className="space-y-4">
         <h4 className="text-lg font-semibold text-white">Advanced Biomarker Analysis</h4>
-        {trends.slice(0, 3).map((trend, index) => (
+        {safeTrends.slice(0, 3).map((trend, index) => (
           <div key={index} className="bg-black/30 rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -773,14 +870,16 @@ function VitalSignsMonitor({
         <div className="bg-black/30 rounded-lg p-3">
           <div className="text-sm text-gray-300 mb-2">Heart Rate Variability</div>
           <div className="h-16">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={[
-                {time: '1', value: 45}, {time: '2', value: 52}, {time: '3', value: 48}, 
-                {time: '4', value: 55}, {time: '5', value: 49}, {time: '6', value: 53}
-              ]}>
-                <Line type="monotone" dataKey="value" stroke="#ef4444" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
+            <ChartWrapper height={64}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={[
+                  {time: '1', value: 45}, {time: '2', value: 52}, {time: '3', value: 48}, 
+                  {time: '4', value: 55}, {time: '5', value: 49}, {time: '6', value: 53}
+                ]}>
+                  <Line type="monotone" dataKey="value" stroke="#ef4444" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartWrapper>
           </div>
         </div>
         

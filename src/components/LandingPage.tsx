@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   HeartIcon, 
   ShieldCheckIcon,
@@ -25,7 +26,7 @@ import {
 import Link from 'next/link';
 
 interface LandingPageProps {
-  onEnterDashboard: () => void;
+  onEnterDashboard?: () => void;
 }
 
 export function LandingPage({ onEnterDashboard }: LandingPageProps) {
@@ -33,6 +34,15 @@ export function LandingPage({ onEnterDashboard }: LandingPageProps) {
   const [showDemo, setShowDemo] = useState(false);
   const [activeFeature, setActiveFeature] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
+
+  const handleEnterDashboard = () => {
+    if (onEnterDashboard) {
+      onEnterDashboard();
+    } else {
+      router.push('/dashboard');
+    }
+  };
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();

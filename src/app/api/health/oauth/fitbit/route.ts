@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/database';
+import { prisma } from '@/lib/database';
 import jwt from 'jsonwebtoken';
 
 export async function GET(request: NextRequest) {
@@ -66,39 +66,42 @@ export async function GET(request: NextRequest) {
     const profileData = await profileResponse.json();
 
     // Store device connection in database
-    const db = getDatabase();
+    const db = prisma;
     await db.deviceConnection.upsert({
       where: {
-        userId_deviceType: {
+        userId_deviceId: {
           userId,
-          deviceType: 'FITBIT',
+          deviceId: `fitbit_${profileData.user.encodedId}`,
         },
       },
       update: {
         isConnected: true,
-        lastSync: new Date(),
-        connectionData: {
+        lastSyncAt: new Date(),
+        connectionData: JSON.stringify({
           accessToken: tokenData.access_token,
           refreshToken: tokenData.refresh_token,
           tokenExpiry: new Date(Date.now() + tokenData.expires_in * 1000),
           userId: profileData.user.encodedId,
           scopes: tokenData.scope?.split(' ') || [],
-        },
+        }),
       },
       create: {
         userId,
         deviceType: 'FITBIT',
-        deviceId: profileData.user.encodedId,
+        deviceId: `fitbit_${profileData.user.encodedId}`,
         deviceName: 'Fitbit Account',
+        manufacturer: 'Fitbit',
+        connectionType: 'API',
         isConnected: true,
-        lastSync: new Date(),
-        connectionData: {
+        lastSyncAt: new Date(),
+        dataTypes: 'heart_rate,steps,sleep,calories',
+        connectionData: JSON.stringify({
           accessToken: tokenData.access_token,
           refreshToken: tokenData.refresh_token,
           tokenExpiry: new Date(Date.now() + tokenData.expires_in * 1000),
           userId: profileData.user.encodedId,
           scopes: tokenData.scope?.split(' ') || [],
-        },
+        }),
       },
     });
 

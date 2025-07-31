@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/database';
+import { prisma } from '@/lib/database';
 import jwt from 'jsonwebtoken';
 
 export async function GET(request: NextRequest) {
@@ -65,39 +65,42 @@ export async function GET(request: NextRequest) {
     }
 
     // Store device connection in database
-    const db = getDatabase();
+    const db = prisma;
     await db.deviceConnection.upsert({
       where: {
-        userId_deviceType: {
+        userId_deviceId: {
           userId,
-          deviceType: 'OURA',
+          deviceId: `oura_${ouraUserId}`,
         },
       },
       update: {
         isConnected: true,
-        lastSync: new Date(),
-        connectionData: {
+        lastSyncAt: new Date(),
+        connectionData: JSON.stringify({
           accessToken: tokenData.access_token,
           refreshToken: tokenData.refresh_token,
           tokenExpiry: new Date(Date.now() + tokenData.expires_in * 1000),
           userId: ouraUserId,
           scopes: ['personal', 'daily'],
-        },
+        }),
       },
       create: {
         userId,
         deviceType: 'OURA',
-        deviceId: ouraUserId,
+        deviceId: `oura_${ouraUserId}`,
         deviceName: 'Oura Ring',
+        manufacturer: 'Oura',
+        connectionType: 'API',
         isConnected: true,
-        lastSync: new Date(),
-        connectionData: {
+        lastSyncAt: new Date(),
+        dataTypes: 'heart_rate,sleep,temperature,activity',
+        connectionData: JSON.stringify({
           accessToken: tokenData.access_token,
           refreshToken: tokenData.refresh_token,
           tokenExpiry: new Date(Date.now() + tokenData.expires_in * 1000),
           userId: ouraUserId,
           scopes: ['personal', 'daily'],
-        },
+        }),
       },
     });
 

@@ -3,10 +3,10 @@ import { prisma } from '@/lib/database';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const userId = params.userId;
+    const { userId } = await params;
 
     if (!userId) {
       return NextResponse.json({ error: 'User ID required' }, { status: 400 });
@@ -20,7 +20,7 @@ export async function GET(
         userId: userId,
       },
       orderBy: {
-        lastSync: 'desc',
+        lastSyncAt: 'desc',
       },
     });
 
@@ -52,10 +52,10 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const userId = params.userId;
+    const { userId } = await params;
     const { deviceType, deviceId, deviceName, connectionData } = await request.json();
 
     if (!userId || !deviceType || !deviceId) {
@@ -70,26 +70,26 @@ export async function POST(
     // Create or update device connection
     const device = await db.deviceConnection.upsert({
       where: {
-        userId_deviceType: {
+        userId_deviceId: {
           userId,
-          deviceType,
+          deviceId,
         },
       },
       update: {
-        deviceId,
         deviceName: deviceName || `${deviceType} Device`,
         isConnected: true,
-        lastSync: new Date(),
-        connectionData: connectionData || {},
+        lastSyncAt: new Date(),
       },
       create: {
         userId,
         deviceType,
         deviceId,
         deviceName: deviceName || `${deviceType} Device`,
+        manufacturer: 'Unknown',
+        connectionType: 'API',
         isConnected: true,
-        lastSync: new Date(),
-        connectionData: connectionData || {},
+        lastSyncAt: new Date(),
+        dataTypes: 'heart_rate,steps,sleep',
       },
     });
 
@@ -101,7 +101,7 @@ export async function POST(
         deviceId: device.deviceId,
         deviceName: device.deviceName,
         isConnected: device.isConnected,
-        lastSync: device.lastSync.toISOString(),
+        lastSync: device.lastSyncAt?.toISOString(),
       },
     });
 

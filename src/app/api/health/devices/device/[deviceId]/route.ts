@@ -3,10 +3,10 @@ import { prisma } from '@/lib/database';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { deviceId: string } }
+  { params }: { params: Promise<{ deviceId: string }> }
 ) {
   try {
-    const deviceId = params.deviceId;
+    const { deviceId } = await params;
 
     if (!deviceId) {
       return NextResponse.json({ error: 'Device ID required' }, { status: 400 });
@@ -54,10 +54,10 @@ export async function DELETE(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { deviceId: string } }
+  { params }: { params: Promise<{ deviceId: string }> }
 ) {
   try {
-    const deviceId = params.deviceId;
+    const { deviceId } = await params;
     const { isConnected, deviceName, connectionData } = await request.json();
 
     if (!deviceId) {
@@ -85,7 +85,7 @@ export async function PUT(
         deviceId: device.deviceId,
         deviceName: device.deviceName,
         isConnected: device.isConnected,
-        lastSync: device.lastSync.toISOString(),
+        lastSync: device.lastSyncAt?.toISOString(),
       },
     });
 

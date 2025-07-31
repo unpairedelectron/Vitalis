@@ -142,6 +142,7 @@ model DeviceConnection {
   accessToken     String?     // Encrypted
   refreshToken    String?     // Encrypted
   tokenExpiresAt  DateTime?
+  connectionData  String?     // JSON string for additional connection data
   
   // Configuration
   syncFrequency   Int         @default(300) // seconds
@@ -284,6 +285,14 @@ enum DeviceType {
   PULSE_OXIMETER
   SMART_RING
   CHEST_STRAP
+  FITBIT
+  OURA
+  APPLE_WATCH
+  SAMSUNG_WATCH
+  MI_WATCH
+  SAMSUNG_HEALTH
+  APPLE_HEALTH
+  GOOGLE_FIT
   // Add more as needed
 }
 
