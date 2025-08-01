@@ -53,6 +53,7 @@ import { UserMenu } from './UserMenu';
 import MedicalReportAnalysis from './MedicalReportAnalysis';
 import { useRealTimeSensors } from '@/hooks/useRealTimeSensors';
 import { ClinicalDashboard } from './ClinicalDashboardEnhanced';
+import { RealTimeHealthAnalytics } from './RealTimeHealthAnalytics';
 
 interface DashboardProps {
   userId: string;
@@ -79,6 +80,7 @@ export function HealthDashboard({ userId, onBackToLanding }: DashboardProps) {
   const [deviceManagerOpen, setDeviceManagerOpen] = useState(false);
   const [medicalAnalysisOpen, setMedicalAnalysisOpen] = useState(false);
   const [clinicalDashboardOpen, setClinicalDashboardOpen] = useState(false);
+  const [realTimeAnalyticsOpen, setRealTimeAnalyticsOpen] = useState(false);
   
   // Real-time sensor integration
   const { realTimeData, connectedDevices, isConnecting } = useRealTimeSensors();
@@ -221,6 +223,15 @@ export function HealthDashboard({ userId, onBackToLanding }: DashboardProps) {
               >
                 <ComputerDesktopIcon className="h-5 w-5" />
                 <span>Command Center</span>
+              </button>
+              
+              {/* Real-Time Analytics Button */}
+              <button
+                onClick={() => setRealTimeAnalyticsOpen(true)}
+                className="flex items-center space-x-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all transform hover:scale-105"
+              >
+                <CpuChipIcon className="h-5 w-5" />
+                <span>Predictive Analytics</span>
               </button>
               
               {/* Medical Report Analysis Button */}
@@ -398,6 +409,13 @@ export function HealthDashboard({ userId, onBackToLanding }: DashboardProps) {
           onClose={() => setMedicalAnalysisOpen(false)}
         />
       )}
+
+      {/* Real-Time Health Analytics */}
+      <RealTimeHealthAnalytics
+        isOpen={realTimeAnalyticsOpen}
+        onClose={() => setRealTimeAnalyticsOpen(false)}
+        userId={userId}
+      />
     </div>
   );
 }

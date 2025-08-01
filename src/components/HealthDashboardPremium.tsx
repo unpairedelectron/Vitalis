@@ -20,7 +20,9 @@ import {
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   CheckCircleIcon,
-  SparklesIcon
+  SparklesIcon,
+  ComputerDesktopIcon,
+  CpuChipIcon
 } from '@heroicons/react/24/outline';
 import { 
   LineChart, 
@@ -41,6 +43,8 @@ import {
   RadialBar,
   Legend
 } from 'recharts';
+import { HealthCommandCenter } from './HealthCommandCenter';
+import { RealTimeHealthAnalytics } from './RealTimeHealthAnalytics';
 
 interface HealthDashboardPremiumProps {
   userId: string;
@@ -50,6 +54,8 @@ interface HealthDashboardPremiumProps {
 export function HealthDashboardPremium({ userId, onBackToLanding }: HealthDashboardPremiumProps) {
   const [selectedTab, setSelectedTab] = useState<'overview' | 'vitals' | 'wellness' | 'insights'>('overview');
   const [clinicalModalOpen, setClinicalModalOpen] = useState(false);
+  const [commandCenterOpen, setCommandCenterOpen] = useState(false);
+  const [realTimeAnalyticsOpen, setRealTimeAnalyticsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<any>(null);
 
@@ -260,6 +266,24 @@ export function HealthDashboardPremium({ userId, onBackToLanding }: HealthDashbo
               >
                 Clinical Analysis
               </button>
+              
+              {/* Command Center Button */}
+              <button
+                onClick={() => setCommandCenterOpen(true)}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg flex items-center space-x-2"
+              >
+                <ComputerDesktopIcon className="h-5 w-5" />
+                <span>Command Center</span>
+              </button>
+              
+              {/* Real-Time Analytics Button */}
+              <button
+                onClick={() => setRealTimeAnalyticsOpen(true)}
+                className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-4 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg flex items-center space-x-2"
+              >
+                <CpuChipIcon className="h-5 w-5" />
+                <span>Predictive Analytics</span>
+              </button>
             </div>
           </div>
         </div>
@@ -298,6 +322,20 @@ export function HealthDashboardPremium({ userId, onBackToLanding }: HealthDashbo
           {selectedTab === 'insights' && <InsightsTab data={dashboardData} />}
         </div>
       </div>
+
+      {/* Health Command Center */}
+      <HealthCommandCenter 
+        isOpen={commandCenterOpen}
+        onClose={() => setCommandCenterOpen(false)}
+        healthData={dashboardData}
+      />
+
+      {/* Real-Time Health Analytics */}
+      <RealTimeHealthAnalytics
+        isOpen={realTimeAnalyticsOpen}
+        onClose={() => setRealTimeAnalyticsOpen(false)}
+        userId={userId}
+      />
     </div>
   );
 }
