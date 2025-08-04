@@ -88,35 +88,6 @@ import {
   PhysicianReport
 } from '@/types/health';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { userId: string } }
-) {
-  try {
-    const { userId } = params;
-    
-    // Simulate clinical data generation
-    const clinicalData = generateClinicalHealthData(userId);
-    
-    return NextResponse.json({
-      success: true,
-      data: clinicalData,
-      timestamp: new Date().toISOString()
-    });
-    
-  } catch (error) {
-    console.error('Clinical data API error:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to fetch clinical data',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
-  }
-}
-
 function generateClinicalHealthData(userId: string) {
   return {
     whoCompliance: generateWHOCompliance(),
