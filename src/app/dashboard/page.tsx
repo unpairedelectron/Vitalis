@@ -1,12 +1,12 @@
 'use client';
 
-import { EnhancedHealthDashboard } from '@/components/EnhancedHealthDashboard';
+import { HealthDashboardPremiumClean } from '@/components/HealthDashboardPremiumClean';
 import { AuthGuard } from '@/components/AuthGuard';
 
 export default function DashboardPage() {
   return (
     <AuthGuard>
-      <EnhancedHealthDashboard userId="demo-user-001" />
+      <HealthDashboardPremiumClean userId="demo-user-001" isDemoMode={false} />
     </AuthGuard>
   );
 }

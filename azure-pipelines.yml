@@ -1,0 +1,46 @@
+# Vitalis Health App - Simplified Azure Pipeline
+# This pipeline builds the app and creates deployment artifacts
+
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  nodeVersion: '18.x'
+
+jobs:
+- job: BuildVitalis
+  displayName: 'Build Vitalis Health App'
+  steps:
+  
+  - task: NodeTool@0
+    displayName: 'Use Node.js $(nodeVersion)'
+    inputs:
+      versionSpec: '$(nodeVersion)'
+
+  - script: |
+      npm ci
+    displayName: 'Install dependencies'
+
+  - script: |
+      npm run build
+    displayName: 'Build Next.js application'
+    env:
+      NODE_ENV: production
+
+  - task: ArchiveFiles@2
+    displayName: 'Create deployment package'
+    inputs:
+      rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+      includeRootFolder: false
+      archiveType: 'zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/vitalis-app.zip'
+      replaceExistingArchive: true
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish build artifacts'
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)/vitalis-app.zip'
+      artifactName: 'vitalis-build'
