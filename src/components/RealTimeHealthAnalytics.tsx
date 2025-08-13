@@ -62,7 +62,7 @@ export function RealTimeHealthAnalytics({ isOpen, onClose, userId }: RealTimeAna
         height: 175,
         weight: 70,
         fitnessLevel: 'moderate' as const,
-        activityLevel: 'moderate' as const,
+        activityLevel: 'moderately_active' as const,
         healthGoals: []
       };
 

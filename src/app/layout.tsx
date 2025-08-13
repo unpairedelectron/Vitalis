@@ -40,10 +40,27 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased font-sans">
+      <body className="antialiased font-sans circadian-adaptive">
         <ClientProviders>
           {children}
         </ClientProviders>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Initialize UX Singularity Engine
+              if (typeof window !== 'undefined') {
+                window.addEventListener('DOMContentLoaded', async () => {
+                  try {
+                    const { default: UXSingularityEngine } = await import('/src/lib/ux-singularity.ts');
+                    window.uxSingularity = new UXSingularityEngine();
+                  } catch (error) {
+                    console.warn('UX Singularity Engine failed to load:', error);
+                  }
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );

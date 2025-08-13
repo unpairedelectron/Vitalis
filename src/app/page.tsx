@@ -3,11 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LandingPage } from '@/components/LandingPage';
-import { HealthDashboard } from '@/components/HealthDashboard';
-import { HealthDashboardSimple } from '@/components/HealthDashboardSimple';
-import { HealthDashboardStable } from '@/components/HealthDashboardStable';
-import { HealthDashboardClean } from '@/components/HealthDashboardClean';
-import { HealthDashboardPremium } from '@/components/HealthDashboardPremium';
+import { HealthDashboardPremiumClean } from '@/components/HealthDashboardPremiumClean';
 
 export default function Home() {
   const [showDashboard, setShowDashboard] = useState(false);
@@ -22,7 +18,8 @@ export default function Home() {
   };
 
   if (showDashboard) {
-    return <HealthDashboardPremium userId="demo-user-001" onBackToLanding={handleBackToLanding} />;
+    // Production-ready dashboard with debug elements removed
+    return <HealthDashboardPremiumClean userId="demo-user-001" onBackToLanding={handleBackToLanding} isDemoMode={false} />;
   }
 
   return <LandingPage onEnterDashboard={handleEnterDashboard} />;

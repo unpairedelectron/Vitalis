@@ -14,8 +14,16 @@ const nextConfig: NextConfig = {
     // Disable static optimization for problematic pages
     forceSwcTransforms: true,
   },
-  // Disable static optimization during build
+  // Azure App Service configuration
+  output: 'standalone',
+  images: {
+    unoptimized: true
+  },
   trailingSlash: false,
+  // Azure-specific optimizations
+  compress: true,
+  poweredByHeader: false,
+  generateEtags: false
 };
 
 export default nextConfig;

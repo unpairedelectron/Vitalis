@@ -116,7 +116,7 @@ export default function AboutPage() {
       {/* Hero Section */}
       <section className="pt-20 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl font-black mb-6">
+          <h1 className="text-4xl font-black mb-6">
             <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
               About Vitalis
             </span>
@@ -192,7 +192,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {teamMembers.map((member, index) => (
               <div key={index} className="bg-black/40 backdrop-blur-sm border border-blue-500/30 rounded-xl p-8 text-center">
-                <div className="text-6xl mb-4">{member.avatar}</div>
+                <div className="text-4xl mb-4">{member.avatar}</div>
                 <h3 className="text-xl font-bold text-white mb-2">{member.name}</h3>
                 <div className="text-blue-400 font-medium mb-4">{member.role}</div>
                 <p className="text-blue-200 mb-4 leading-relaxed">{member.bio}</p>

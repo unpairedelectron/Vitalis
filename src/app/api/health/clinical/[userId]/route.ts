@@ -724,27 +724,4 @@ function generatePhysicianReports(userId: string): PhysicianReport[] {
   ];
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { userId: string } }
-) {
-  try {
-    const { userId } = params;
-    const body = await request.json();
-    
-    // Handle clinical data updates, report generation, etc.
-    console.log('Clinical data update for user:', userId, body);
-    
-    return NextResponse.json({
-      success: true,
-      message: 'Clinical data updated successfully'
-    });
-    
-  } catch (error) {
-    console.error('Clinical data update error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to update clinical data' },
-      { status: 500 }
-    );
-  }
-}
+

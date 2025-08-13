@@ -165,7 +165,7 @@ export default function CareersPage() {
       {/* Hero Section */}
       <section className="pt-20 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl font-black mb-6">
+          <h1 className="text-4xl font-black mb-6">
             <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
               Join Our Mission
             </span>

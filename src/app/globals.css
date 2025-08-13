@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../styles/ux-singularity.css";
 
 /* Smooth scrolling for anchor links */
 html {
@@ -40,14 +41,55 @@ body {
   }
 }
 
-@keyframes progressFill {
-  0% { 
-    width: 0%; 
+/* Google-style App Launcher Animations */
+@keyframes appLauncherSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
   }
-  100% { 
-    width: var(--target-width, 100%); 
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
+
+@keyframes appCardHover {
+  0% {
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    transform: scale(1.08) translateY(-2px);
+  }
+}
+
+@keyframes appGridStagger {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.app-launcher-dropdown {
+  animation: appLauncherSlideIn 0.2s ease-out;
+}
+
+.app-grid-item {
+  animation: appGridStagger 0.3s ease-out;
+}
+
+.app-grid-item:nth-child(1) { animation-delay: 0.05s; }
+.app-grid-item:nth-child(2) { animation-delay: 0.1s; }
+.app-grid-item:nth-child(3) { animation-delay: 0.15s; }
+.app-grid-item:nth-child(4) { animation-delay: 0.2s; }
+.app-grid-item:nth-child(5) { animation-delay: 0.25s; }
+.app-grid-item:nth-child(6) { animation-delay: 0.3s; }
+.app-grid-item:nth-child(7) { animation-delay: 0.35s; }
+.app-grid-item:nth-child(8) { animation-delay: 0.4s; }
+.app-grid-item:nth-child(9) { animation-delay: 0.45s; }
 
 @keyframes slideInUp {
   0% {
@@ -101,6 +143,25 @@ body {
   100% {
     background-position: 468px 0;
   }
+}
+
+@keyframes shimmerDiagonal {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmerDiagonal 2s infinite;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 70%
+  );
 }
 
 @keyframes float {
@@ -161,6 +222,102 @@ body {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* Enhanced Feature Button Animations */
+@keyframes oracleGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.3), 0 0 40px rgba(147, 51, 234, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(147, 51, 234, 0.5), 0 0 60px rgba(147, 51, 234, 0.2);
+  }
+}
+
+@keyframes neuralPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3), 0 0 40px rgba(16, 185, 129, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.5), 0 0 60px rgba(16, 185, 129, 0.2);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* Feature button hover effects */
+.oracle-button:hover {
+  animation: oracleGlow 2s ease-in-out infinite;
+}
+
+.neural-button:hover {
+  animation: neuralPulse 2s ease-in-out infinite;
+}
+
+.feature-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* Premium floating animation */
+.floating-element {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Neural Network Animation */
+@keyframes neuralPulse {
+  0%, 100% { 
+    opacity: 0.8; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.2);
+  }
+}
+
+@keyframes oracleGlow {
+  0%, 100% { 
+    box-shadow: 0 0 10px rgba(147, 51, 234, 0.5);
+  }
+  50% { 
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.8), 0 0 30px rgba(59, 130, 246, 0.6);
+  }
+}
+
+.neural-pulse {
+  animation: neuralPulse 2s ease-in-out infinite;
+}
+
+.oracle-glow {
+  animation: oracleGlow 3s ease-in-out infinite;
 }
 
 /* Utility classes for animations */
@@ -484,5 +641,465 @@ body {
   .animate-ping,
   .animate-bounce {
     animation: none;
+  }
+}
+
+/* Advanced App Launcher Animations */
+@keyframes appIconHover {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.1) rotate(2deg);
+  }
+  100% {
+    transform: scale(1.05) rotate(0deg);
+  }
+}
+
+@keyframes appIconClick {
+  0% {
+    transform: scale(1.05);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes launcherSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes gridItemDelay {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.app-icon:hover {
+  animation: appIconHover 0.3s ease-out forwards;
+}
+
+.app-icon:active {
+  animation: appIconClick 0.2s ease-out;
+}
+
+.launcher-dropdown {
+  animation: launcherSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.grid-item {
+  animation: gridItemDelay 0.4s ease-out forwards;
+}
+
+.grid-item:nth-child(1) { animation-delay: 0ms; }
+.grid-item:nth-child(2) { animation-delay: 50ms; }
+.grid-item:nth-child(3) { animation-delay: 100ms; }
+.grid-item:nth-child(4) { animation-delay: 150ms; }
+.grid-item:nth-child(5) { animation-delay: 200ms; }
+.grid-item:nth-child(6) { animation-delay: 250ms; }
+.grid-item:nth-child(7) { animation-delay: 300ms; }
+.grid-item:nth-child(8) { animation-delay: 350ms; }
+.grid-item:nth-child(9) { animation-delay: 400ms; }
+
+/* Premium glass morphism effect */
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+/* Advanced button hover states */
+.premium-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.premium-button:hover::before {
+  left: 100%;
+}
+
+/* Advanced Health Oracle Animations */
+@keyframes oracleBreathing {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1) rotate(2deg);
+    opacity: 0.8;
+  }
+}
+
+@keyframes predictionPulse {
+  0%, 100% {
+    background: linear-gradient(45deg, #8b5cf6, #3b82f6);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  }
+  50% {
+    background: linear-gradient(45deg, #a855f7, #6366f1);
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+  }
+}
+
+@keyframes neuralActivity {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes insightReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes emergencyPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+}
+
+.oracle-breathing {
+  animation: oracleBreathing 4s ease-in-out infinite;
+}
+
+.prediction-pulse {
+  animation: predictionPulse 3s ease-in-out infinite;
+}
+
+.neural-activity::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), transparent);
+  animation: neuralActivity 2s ease-in-out infinite;
+}
+
+.insight-reveal {
+  animation: insightReveal 0.6s ease-out forwards;
+}
+
+.emergency-alert {
+  animation: emergencyPulse 1s ease-in-out infinite;
+}
+
+/* Advanced message bubble animations */
+.message-bubble {
+  animation: insightReveal 0.5s ease-out forwards;
+}
+
+.typing-indicator {
+  animation: oracleBreathing 1.5s ease-in-out infinite;
+}
+
+/* Advanced Neural Twin Animations */
+@keyframes neuralEvolution {
+  0% {
+    transform: scale(1) rotate(0deg);
+    background: linear-gradient(45deg, #10b981, #059669);
+  }
+  25% {
+    transform: scale(1.05) rotate(90deg);
+    background: linear-gradient(45deg, #06b6d4, #0891b2);
+  }
+  50% {
+    transform: scale(1.1) rotate(180deg);
+    background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+  }
+  75% {
+    transform: scale(1.05) rotate(270deg);
+    background: linear-gradient(45deg, #8b5cf6, #7c3aed);
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+    background: linear-gradient(45deg, #10b981, #059669);
+  }
+}
+
+@keyframes synapseCreation {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+}
+
+@keyframes evolutionStage {
+  0% {
+    background: linear-gradient(45deg, #f59e0b, #d97706);
+    transform: scale(1);
+  }
+  50% {
+    background: linear-gradient(45deg, #10b981, #059669);
+    transform: scale(1.1);
+  }
+  100% {
+    background: linear-gradient(45deg, #8b5cf6, #7c3aed);
+    transform: scale(1);
+  }
+}
+
+@keyframes consciousnessFlow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes digitalAwakening {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) rotate(-5deg) scale(0.8);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(-5px) rotate(2deg) scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes predictionCascade {
+  0% {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.neural-evolution {
+  animation: neuralEvolution 8s ease-in-out infinite;
+}
+
+.synapse-creation {
+  animation: synapseCreation 2s ease-out;
+}
+
+.evolution-stage {
+  animation: evolutionStage 6s ease-in-out infinite;
+}
+
+.consciousness-flow {
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: consciousnessFlow 4s ease infinite;
+}
+
+.digital-awakening {
+  animation: digitalAwakening 1s ease-out forwards;
+}
+
+.prediction-cascade {
+  animation: predictionCascade 0.8s ease-out forwards;
+}
+
+/* Neural network visualization */
+.neural-network {
+  position: relative;
+  overflow: hidden;
+}
+
+.neural-node {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle, #3b82f6, #1d4ed8);
+  border-radius: 50%;
+  animation: synapseCreation 3s ease-in-out infinite;
+}
+
+.neural-connection {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+  animation: neuralActivity 2s ease-in-out infinite;
+}
+
+/* Premium Button Animations - Clinical, Command, Analytics */
+@keyframes clinicalPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.3), 0 0 40px rgba(236, 72, 153, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(147, 51, 234, 0.5), 0 0 60px rgba(236, 72, 153, 0.3);
+  }
+}
+
+@keyframes commandGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), 0 0 40px rgba(99, 102, 241, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.5), 0 0 60px rgba(99, 102, 241, 0.3);
+  }
+}
+
+@keyframes analyticsShimmer {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.3), 0 0 40px rgba(59, 130, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(6, 182, 212, 0.5), 0 0 60px rgba(59, 130, 246, 0.3);
+  }
+}
+
+.clinical-button {
+  animation: clinicalPulse 3s ease-in-out infinite;
+  position: relative;
+}
+
+.clinical-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmerMove 2s infinite;
+  border-radius: inherit;
+}
+
+.command-button {
+  animation: commandGlow 3.5s ease-in-out infinite;
+  position: relative;
+}
+
+.command-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmerMove 2.2s infinite;
+  border-radius: inherit;
+}
+
+.analytics-button {
+  animation: analyticsShimmer 4s ease-in-out infinite;
+  position: relative;
+}
+
+.analytics-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmerMove 2.8s infinite;
+  border-radius: inherit;
+}
+
+/* Enhanced floating animation for all premium buttons */
+.floating-element {
+  animation: floatingEnhanced 6s ease-in-out infinite;
+}
+
+@keyframes floatingEnhanced {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  33% {
+    transform: translateY(-3px) scale(1.02);
+  }
+  66% {
+    transform: translateY(1px) scale(0.98);
+  }
+}
+
+/* Hover effects for premium buttons */
+.clinical-button:hover,
+.command-button:hover,
+.analytics-button:hover {
+  animation-play-state: paused;
+  transform: scale(1.08) translateY(-2px);
+  filter: brightness(1.1);
+}
+
+/* Pulse animation for status indicators */
+.clinical-button .w-2,
+.command-button .w-2,
+.analytics-button .w-2 {
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.2);
   }
 }
